@@ -52,6 +52,48 @@ class VatinTest extends \PHPUnit_Framework_TestCase
         $this->getValidator($validator)->validate('NL123456789B01', $constraint);
     }
 
+    public function testValidWithExistenceOnError()
+    {
+        $constraint = new Vatin();
+        $constraint->checkExistence = true;
+        $constraint->validIfError = true;
+
+        $validator = $this->getMockBuilder('\Ddeboer\Vatin\Validator')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $validator->expects($this->once())
+            ->method('isValid')
+            ->with('NL123456789B01', true, true)
+            ->will($this->returnValue(true));
+
+        $this->context->expects($this->never())
+            ->method('addViolation');
+
+        $this->getValidator($validator)->validate('NL123456789B01', $constraint);
+    }
+
+    public function testInvalidWithExistenceOnError()
+    {
+        $constraint = new Vatin();
+        $constraint->checkExistence = true;
+        $constraint->validIfError = false;
+
+        $validator = $this->getMockBuilder('\Ddeboer\Vatin\Validator')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $validator->expects($this->once())
+            ->method('isValid')
+            ->with('NL123456789B01', true, false)
+            ->will($this->returnValue(false));
+
+        $this->context->expects($this->once())
+            ->method('addViolation');
+
+        $this->getValidator($validator)->validate('NL123456789B01', $constraint);
+    }
+
     protected function getValidator($validator = null)
     {
         $validator = new VatinValidator($validator ?: new Validator());

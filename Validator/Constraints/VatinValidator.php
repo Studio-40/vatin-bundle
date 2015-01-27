@@ -5,6 +5,7 @@ namespace Ddeboer\VatinBundle\Validator\Constraints;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Constraint;
 use Ddeboer\Vatin\Validator;
+use Ddeboer\Vatin\Exception\ViesException;
 
 /**
  * Validate a VAT identification number using the ddeboer/vatin library
@@ -38,7 +39,7 @@ class VatinValidator extends ConstraintValidator
             return;
         }
 
-        if ($this->isValidVatin($value, $constraint->checkExistence)) {
+        if ($this->isValidVatin($value, $constraint->checkExistence, $constraint->validIfError)) {
             return;
         }
 
@@ -50,11 +51,21 @@ class VatinValidator extends ConstraintValidator
      *
      * @param string $value          Value
      * @param bool   $checkExistence Also check whether the VAT number exists
+     * @param bool   $validIfError   Return valid/invalid if server is down.
+     *                               Default/null throws ViesException
      *
      * @return bool
      */
-    protected function isValidVatin($value, $checkExistence)
+    protected function isValidVatin($value, $checkExistence, $validIfError = null)
     {
-        return $this->validator->isValid($value, $checkExistence);
+        try {
+            return $this->validator->isValid($value, $checkExistence);
+        } catch (ViesException $e) {
+            if ($validIfError) {
+                return true;
+            } else {
+                throw $e;
+            }
+        }
     }
 }

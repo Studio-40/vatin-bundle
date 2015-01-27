@@ -13,6 +13,7 @@ class Vatin extends Constraint
 {
     public $message = 'This is not a valid VAT identification number';
     public $checkExistence = false;
+    public $validIfError = null;
 
     public function validatedBy()
     {
